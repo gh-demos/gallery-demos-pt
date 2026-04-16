@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import Link from "next/link";
 import { Camera } from "lucide-react";
 import { ThemeToggle } from "@/components/ui";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,6 +21,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // suppressHydrationWarning prevents mismatch noise because theme script updates <html> before hydration.
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -28,8 +30,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var key = 'theme';
-                  var storedTheme = localStorage.getItem(key);
+                  var storedTheme = localStorage.getItem('${THEME_STORAGE_KEY}');
                   var theme = (storedTheme === 'dark' || storedTheme === 'light')
                     ? storedTheme
                     : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');

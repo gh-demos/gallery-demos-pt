@@ -2,48 +2,50 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
 
 type Theme = "light" | "dark";
-
-const THEME_KEY = "theme";
-
-const getPreferredTheme = (): Theme =>
-  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
 const applyTheme = (theme: Theme) => {
   document.documentElement.classList.toggle("dark", theme === "dark");
 };
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem(THEME_KEY);
-    const nextTheme =
-      storedTheme === "dark" || storedTheme === "light"
-        ? storedTheme
-        : getPreferredTheme();
-
+    const nextTheme: Theme = document.documentElement.classList.contains("dark")
+      ? "dark"
+      : "light";
     setTheme(nextTheme);
-    applyTheme(nextTheme);
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme: Theme = theme === "dark" ? "light" : "dark";
+    const currentTheme: Theme =
+      theme ?? (document.documentElement.classList.contains("dark") ? "dark" : "light");
+    const nextTheme: Theme = currentTheme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
     applyTheme(nextTheme);
-    localStorage.setItem(THEME_KEY, nextTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
   };
+
+  const effectiveTheme: Theme =
+    theme ??
+    (typeof document !== "undefined" && document.documentElement.classList.contains("dark")
+      ? "dark"
+      : "light");
+  const isDark = effectiveTheme === "dark";
+  const nextThemeLabel = `Switch to ${isDark ? "light" : "dark"} mode`;
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
       className="btn-secondary p-2"
-      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+      aria-label={nextThemeLabel}
+      title={nextThemeLabel}
     >
-      {theme === "dark" ? (
+      {isDark ? (
         <Sun className="h-4 w-4" />
       ) : (
         <Moon className="h-4 w-4" />
