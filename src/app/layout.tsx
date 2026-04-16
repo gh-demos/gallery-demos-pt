@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
 import { Camera } from "lucide-react";
+import { ThemeToggle } from "@/components/ui";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,8 +21,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // suppressHydrationWarning prevents mismatch noise because theme script updates <html> before hydration.
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var storedTheme = localStorage.getItem('${THEME_STORAGE_KEY}');
+                  var theme = (storedTheme === 'dark' || storedTheme === 'light')
+                    ? storedTheme
+                    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  document.documentElement.classList.toggle('dark', theme === 'dark');
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} antialiased`}
       >
@@ -41,6 +61,7 @@ export default function RootLayout({
                 <Link href="/upload" className="nav-link">
                   Upload
                 </Link>
+                <ThemeToggle />
                 <Link href="/admin" className="btn-primary">
                   Admin
                 </Link>
