@@ -29,7 +29,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     setTheme(prev => {
       const next: Theme = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('theme', next);
+
+      try {
+        localStorage.setItem('theme', next);
+      } catch {
+        // Ignore storage persistence failures and still apply the theme.
+      }
       document.documentElement.classList.toggle('dark', next === 'dark');
       return next;
     });
